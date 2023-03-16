@@ -1,0 +1,66 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+import warnings
+warnings.filterwarnings(action='ignore', category=FutureWarning)
+import torch 
+import torch.nn as nn
+import time
+import torch.nn.functional as F # Contains some additional functions such as activations
+from torch.autograd import Variable
+
+class Preprocess():
+    def __init__(self):
+
+        return
+    
+    def _load(self,path, plot=True):
+
+        # First we load the data
+        dataset = np.load(path)
+        X_train, y_train = dataset['train_images'], dataset['train_labels']
+        X_val, y_val = dataset['val_images'], dataset['val_labels']
+        X_test, y_test = dataset['test_images'], dataset['test_labels']
+
+        # identify split
+        total_x = len(X_train) + len(X_val) + len(X_test)
+        x_sets = [X_train, X_val, X_test]
+        y_sets = [y_train, y_val, y_test]
+
+        print('Total amount in:')
+        for set in x_sets:
+            name = [name for name in globals() if globals()[name] is set][0]
+            print('- {} set is {} ({:.1f} % of total)'.format(name[2:],len(set), len(set)/total_x*100))
+
+        #Identify class balance
+        print('Class balance for:')
+        for set in y_sets:
+            name = [name for name in globals() if globals()[name] is set][0]
+            classes, counts = np.unique(set, return_counts=True)
+        total = sum(counts)
+        count_ls = ''
+
+        for c in classes:
+            if count_ls != '': count_ls += ','
+            count_ls +='class {} has {} ({:.1f}%) samples'.format(classes[c], counts[c], counts[c]/total*100)
+        
+        print('- {} set has: {}'.format(name[2:], count_ls))
+
+        # Issues with class balance is that for example if we had all in a
+        # 0 zero class (99%) the accuracy could be perfect
+
+        # plt both classes
+        if plot == True:
+            fig, ax = plt.subplots(nrows=1, ncols=2)
+            index = 1
+            i0 = np.where(y_train==0)[0][index]
+            i1 = np.where(y_train==1)[0][index]
+            ax[0].set_title('Class 0')
+            ax[0].imshow(X_train[i0])
+            ax[1].set_title('Class 1')
+            ax[1].imshow(X_train[i1])
+        plt.show()
+
+
+
+
